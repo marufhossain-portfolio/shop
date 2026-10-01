@@ -13,9 +13,9 @@
  *   5) Pawa Web app URL ta website-er app.js → CONFIG.appsScriptUrl-e bosao
  */
 
-const SHEET_ID = "PASTE_YOUR_GOOGLE_SHEET_ID_HERE"; // ← Sheet URL er /d/<ID>/ edit
+const SHEET_ID = "1zvSKSXUKET8jwcBc3DLZHoexwt-gzloOkYEHW60-j08";
 const SHEET_NAME = "Orders";
-const NOTIFY_EMAIL = "marufhossain2707@gmail.com";  // ← order alert jabe
+const NOTIFY_EMAIL = "marufhossain2707@gmail.com";
 
 function doGet(e) {
   return out({ ok: true, msg: "Order receiver active" });

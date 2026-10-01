@@ -7,8 +7,8 @@ const CONFIG = {
   deliveryCharge: 150,   // ডেলিভারি চার্জ (৳)
   phone: "01577800857",
   email: "marufhossain2707@gmail.com",  // ← order email jabe ekhane
-  // Google Apps Script Web App URL (optional — Sheet + email record chaile deploy koro)
-  appsScriptUrl: "",
+  // Google Apps Script Web App URL (order → Sheet + email)
+  appsScriptUrl: "https://script.google.com/macros/s/AKfycbzEFnaTlhRC6r1Y5yXD86TeeAgzTy2luk-ykrkcsUgVMcsjR0vaGC2E_X_EXPIfLNNGmA/exec",
 };
 
 const DISTRICTS = [
