@@ -31,18 +31,30 @@ Tarpor `index.html` e product name/price/description text gula nijer moto edit k
 
 Placeholder (`<div class="ph">`) use kora hoyeche. Real image dit e `.ph` div er jaygay `<img>` bosao, ba `.ph` e CSS background diye image set koro.
 
-## Order setup (Google Sheet + Email)
+## Order setup (Email notification)
 
-1. [Google Sheets](https://sheets.new) e ekta sheet banao → **Extensions → Apps Script**
-2. `code.gs` er content paste koro
-3. `SHEET_ID` update koro (Sheet URL er `/d/<ID>/` part)
-4. `NOTIFY_EMAIL` update koro (order alert jabe jekhane)
-5. **Deploy → New deployment → Web app**
-   - Execute as: **Me**
-   - Who has access: **Anyone**
-6. Pawa **Web app URL** ta `app.js` → `CONFIG.appsScriptUrl`-e bosao
+Customer order dile **tomake email-e** order jabe (`marufhossain2707@gmail.com`).
 
-Ekhon customer order dile: order Google Sheet-e save hobe + tumake email jabe.
+### Option 1 — FormSubmit (default, sabcheye sohoj)
+
+Kono deploy lagbe na. Eta ekhon thekei kaj kore:
+
+1. Site-e ekbar test order dao
+2. FormSubmit theke tomake ekta **activation email** ashbe → ekbar click koro ("Confirm form")
+3. Bas! Er por prottek order tomake email-e ashbe
+
+> `app.js` → `CONFIG.email` = `marufhossain2707@gmail.com` (set kora ache)
+
+### Option 2 — Google Apps Script (Google Sheet record + email)
+
+Sheet-e order save + email chaile:
+
+1. [Google Sheets](https://sheets.new) → **Extensions → Apps Script**
+2. `code.gs` paste koro → `SHEET_ID` + `NOTIFY_EMAIL` update
+3. **Deploy → Web app** (Execute as: Me, Access: Anyone)
+4. Pawa URL ta `app.js` → `CONFIG.appsScriptUrl`-e bosao
+
+`appsScriptUrl` set korle Apps Script use hobe; na korle FormSubmit-e fallback hoy.
 
 ## GitHub Pages host
 

@@ -6,8 +6,8 @@ const CONFIG = {
   price: 950,            // একক মূল্য (৳)
   deliveryCharge: 150,   // ডেলিভারি চার্জ (৳)
   phone: "01577800857",
-  email: "hello@khamariagro.com",
-  // Google Apps Script Web App URL (deploy korar por niche bosao)
+  email: "marufhossain2707@gmail.com",  // ← order email jabe ekhane
+  // Google Apps Script Web App URL (optional — Sheet + email record chaile deploy koro)
   appsScriptUrl: "",
 };
 
@@ -83,35 +83,50 @@ $("#orderForm").addEventListener("submit", async (e) => {
   const old = btn.textContent;
   btn.disabled = true; btn.textContent = "অর্ডার পাঠানো হচ্ছে…";
 
-  // fallback: Apps Script deploy na korleo direct call/WhatsApp option
-  if (!CONFIG.appsScriptUrl) {
-    const wa = "https://wa.me/" + CONFIG.phone.replace(/\D/g, "") + "?text=" + encodeURIComponent(
-      `নতুন অর্ডার:\nনাম: ${name}\nমোবাইল: ${phone}\nঠিকানা: ${address}, ${upazila}, ${district}\nপরিমাণ: ${qty}\nমোট: ৳ ${order.total}`
-    );
-    toast("Apps Script URL set kora nei — WhatsApp e order pathano hocche", "");
-    window.open(wa, "_blank");
-    btn.disabled = false; btn.textContent = old;
-    return;
-  }
-
   try {
-    const r = await fetch(CONFIG.appsScriptUrl, {
-      method: "POST",
-      redirect: "follow",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(order)
-    });
-    const j = await r.json();
-    if (j && j.ok) {
-      toast("ধন্যবাদ! আপনার অর্ডার সফলভাবে পেয়েছি। শীঘ্রই কল করে কনফার্ম করা হবে।", "ok");
-      e.target.reset(); qty = 1; updateTotal();
+    let ok = false;
+    if (CONFIG.appsScriptUrl) {
+      // Primary: Google Apps Script (Sheet + email)
+      const r = await fetch(CONFIG.appsScriptUrl, {
+        method: "POST", redirect: "follow",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(order)
+      });
+      const j = await r.json();
+      ok = !!(j && j.ok);
+      if (!ok) throw new Error((j && j.error) || "server error");
     } else {
-      throw new Error((j && j.error) || "unknown");
+      // Fallback: FormSubmit → email (no setup, ekta activation click lagbe)
+      const r = await fetch("https://formsubmit.co/ajax/" + CONFIG.email, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({
+          ...order,
+          _subject: "🛒 নতুন অর্ডার — " + name + " (" + phone + ")",
+          _template: "table",
+          _captcha: "false"
+        })
+      });
+      const j = await r.json();
+      ok = !!(j && j.success);
+      if (!ok) throw new Error((j && j.message) || "server error");
     }
+
+    // success screen
+    $("#orderWrap").hidden = true;
+    $("#orderSuccess").hidden = false;
+    document.getElementById("order").scrollIntoView({ behavior: "smooth" });
+    e.target.reset(); qty = 1; updateTotal();
   } catch (err) {
     toast("অর্ডার পাঠানো যায়নি। দয়া করে কল করুন: " + CONFIG.phone, "bad");
     console.error(err);
   } finally {
     btn.disabled = false; btn.textContent = old;
   }
+});
+
+$("#backHome").addEventListener("click", () => {
+  $("#orderSuccess").hidden = true;
+  $("#orderWrap").hidden = false;
+  window.scrollTo({ top: 0, behavior: "smooth" });
 });
