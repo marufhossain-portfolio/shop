@@ -1,14 +1,18 @@
 /* ============================================================
-   CONFIG — ei ek jayga change korlei sob hoye jabe
+   Shop frontend — dynamic (config comes from Google Sheet via Apps Script)
    ============================================================ */
+const APPS_URL = "https://script.google.com/macros/s/AKfycbzEFnaTlhRC6r1Y5yXD86TeeAgzTy2luk-ykrkcsUgVMcsjR0vaGC2E_X_EXPIfLNNGmA/exec";
+
+// fallback defaults (Apps Script na geleo page kaj korbe)
 const CONFIG = {
   productName: "খামারি স্মার্ট নিরানি",
-  price: 950,            // একক মূল্য (৳)
-  deliveryCharge: 150,   // ডেলিভারি চার্জ (৳)
+  price: 950,
+  deliveryCharge: 150,
   phone: "01577800857",
-  email: "marufhossain2707@gmail.com",  // ← order email jabe ekhane
-  // Google Apps Script Web App URL (order → Sheet + email)
-  appsScriptUrl: "https://script.google.com/macros/s/AKfycbzEFnaTlhRC6r1Y5yXD86TeeAgzTy2luk-ykrkcsUgVMcsjR0vaGC2E_X_EXPIfLNNGmA/exec",
+  email: "marufhossain2707@gmail.com",
+  description: "",
+  heroImage: "",
+  galleryImages: ""
 };
 
 const DISTRICTS = [
@@ -23,7 +27,15 @@ const DISTRICTS = [
 ];
 
 const $ = (s) => document.querySelector(s);
+const $$ = (s) => document.querySelectorAll(s);
 let qty = 1;
+
+const fmtPrice = (n) => Number(n || 0).toLocaleString("en-US");
+function fmtPhone(p) {
+  p = String(p || "").replace(/[\s-]/g, "");
+  if (/^01\d{9}$/.test(p)) return p.slice(0, 5) + "-" + p.slice(5);
+  return p;
+}
 
 /* ---------- district select ---------- */
 const dsel = $("#f_district");
@@ -39,13 +51,75 @@ function updateTotal() {
   const total = sub + CONFIG.deliveryCharge;
   $("#q_val").textContent = qty;
   $("#sum_qty").textContent = qty;
-  $("#sum_sub").textContent = "৳ " + sub.toLocaleString("bn-BD");
-  $("#sum_del").textContent = "৳ " + CONFIG.deliveryCharge.toLocaleString("bn-BD");
-  $("#sum_total").textContent = "৳ " + total.toLocaleString("bn-BD");
+  $("#sum_sub").textContent = "৳ " + fmtPrice(sub);
+  $("#sum_del").textContent = "৳ " + fmtPrice(CONFIG.deliveryCharge);
+  $("#sum_total").textContent = "৳ " + fmtPrice(total);
 }
 $("#q_plus").addEventListener("click", () => { qty = Math.min(99, qty + 1); updateTotal(); });
 $("#q_minus").addEventListener("click", () => { qty = Math.max(1, qty - 1); updateTotal(); });
-updateTotal();
+
+/* ---------- render config ---------- */
+function renderConfig() {
+  document.title = CONFIG.productName + " | Shop";
+  const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
+  set("#dynName", CONFIG.productName);
+  set("#dynName2", CONFIG.productName);
+  set("#dynCrumb", CONFIG.productName);
+  $("#dynPrice").textContent = fmtPrice(CONFIG.price);
+  $("#dynPrice2").textContent = "৳ " + fmtPrice(CONFIG.price);
+  if (CONFIG.description) $("#dynDesc").textContent = CONFIG.description;
+
+  // phone
+  $$('a[href^="tel:"]').forEach((a) => (a.href = "tel:" + CONFIG.phone.replace(/[\s-]/g, "")));
+  $$(".js-phone").forEach((el) => (el.textContent = fmtPhone(CONFIG.phone)));
+
+  // email
+  if (CONFIG.email) {
+    const em = $("#dynEmail"); if (em) { em.textContent = CONFIG.email; em.href = "mailto:" + CONFIG.email; }
+  }
+
+  // hero image
+  const heroImg = $("#dynHero"), heroPh = $("#dynHeroPh");
+  if (CONFIG.heroImage) { heroImg.src = CONFIG.heroImage; heroImg.hidden = false; heroPh.hidden = true; }
+  else { heroImg.hidden = true; heroPh.hidden = false; }
+
+  // thumbnail in order summary
+  const thumb = $("#dynThumb"), thumbPh = $("#dynThumbPh");
+  if (CONFIG.heroImage) { thumb.src = CONFIG.heroImage; thumb.hidden = false; thumbPh.hidden = true; }
+  else { thumb.hidden = true; thumbPh.hidden = false; }
+
+  // gallery
+  const g = (CONFIG.galleryImages || "").split("|").map((s) => s.trim()).filter(Boolean);
+  const gHost = $("#dynGallery");
+  if (g.length) {
+    $("#gallery").hidden = false;
+    gHost.innerHTML = g.map((u) => `<img src="${u}" alt="gallery" loading="lazy" />`).join("");
+  } else {
+    $("#gallery").hidden = true;
+  }
+
+  updateTotal();
+}
+
+/* ---------- load config from Apps Script ---------- */
+async function loadConfig() {
+  try {
+    const r = await fetch(APPS_URL + "?action=getConfig", { redirect: "follow" });
+    const j = await r.json();
+    if (j && j.ok && j.config) {
+      const c = j.config;
+      if (c.productName) CONFIG.productName = c.productName;
+      if (c.price && Number(c.price)) CONFIG.price = Number(c.price);
+      if (c.deliveryCharge) CONFIG.deliveryCharge = Number(c.deliveryCharge);
+      if (c.phone) CONFIG.phone = c.phone;
+      if (c.email) CONFIG.email = c.email;
+      if (c.description) CONFIG.description = c.description;
+      if (c.heroImage) CONFIG.heroImage = c.heroImage;
+      if (c.galleryImages) CONFIG.galleryImages = c.galleryImages;
+    }
+  } catch (_) {}
+  renderConfig();
+}
 
 /* ---------- toast ---------- */
 let tTimer;
@@ -72,6 +146,7 @@ $("#orderForm").addEventListener("submit", async (e) => {
   if (!upazila) return toast("উপজেলা লিখুন", "bad");
 
   const order = {
+    action: "order",
     name, phone: phone.replace(/[\s-]/g, ""), address, district, upazila, note,
     product: CONFIG.productName, qty,
     price: CONFIG.price, delivery: CONFIG.deliveryCharge,
@@ -84,41 +159,20 @@ $("#orderForm").addEventListener("submit", async (e) => {
   btn.disabled = true; btn.textContent = "অর্ডার পাঠানো হচ্ছে…";
 
   try {
-    let ok = false;
-    if (CONFIG.appsScriptUrl) {
-      // Primary: Google Apps Script (Sheet + email)
-      const r = await fetch(CONFIG.appsScriptUrl, {
-        method: "POST", redirect: "follow",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(order)
-      });
-      const j = await r.json();
-      ok = !!(j && j.ok);
-      if (!ok) throw new Error((j && j.error) || "server error");
-    } else {
-      // Fallback: FormSubmit → email (no setup, ekta activation click lagbe)
-      const r = await fetch("https://formsubmit.co/ajax/" + CONFIG.email, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Accept": "application/json" },
-        body: JSON.stringify({
-          ...order,
-          _subject: "🛒 নতুন অর্ডার — " + name + " (" + phone + ")",
-          _template: "table",
-          _captcha: "false"
-        })
-      });
-      const j = await r.json();
-      ok = !!(j && j.success);
-      if (!ok) throw new Error((j && j.message) || "server error");
-    }
+    const r = await fetch(APPS_URL, {
+      method: "POST", redirect: "follow",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(order)
+    });
+    const j = await r.json();
+    if (!(j && j.ok)) throw new Error((j && j.error) || "server error");
 
-    // success screen
     $("#orderWrap").hidden = true;
     $("#orderSuccess").hidden = false;
     document.getElementById("order").scrollIntoView({ behavior: "smooth" });
     e.target.reset(); qty = 1; updateTotal();
   } catch (err) {
-    toast("অর্ডার পাঠানো যায়নি। দয়া করে কল করুন: " + CONFIG.phone, "bad");
+    toast("অর্ডার পাঠানো যায়নি। দয়া করে কল করুন: " + fmtPhone(CONFIG.phone), "bad");
     console.error(err);
   } finally {
     btn.disabled = false; btn.textContent = old;
@@ -130,3 +184,7 @@ $("#backHome").addEventListener("click", () => {
   $("#orderWrap").hidden = false;
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
+
+/* ---------- boot ---------- */
+renderConfig();
+loadConfig();

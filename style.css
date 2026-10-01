@@ -67,6 +67,9 @@ a{color:inherit;text-decoration:none}
 .ph[style*="--i:2"],.ph[style*="--i:3"],.ph[style*="--i:4"]{--c1:#d9ead9;--c2:#f2e8cf}
 .ph.small{aspect-ratio:4/3;border-radius:12px;min-height:0}
 .ph.thumb{width:64px;height:64px;border-radius:10px;min-height:0;font-size:10px}
+.hero-pic{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:20px;display:block}
+.gallery img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:14px;display:block}
+img#dynThumb{width:64px;height:64px;object-fit:cover;border-radius:10px;display:block;background:var(--cream)}
 
 /* ---------- sections ---------- */
 .sec{padding:52px 0}

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Admin — Shop Settings</title>
+<meta name="robots" content="noindex" />
+<link rel="stylesheet" href="style.css" />
+<style>
+  .admin-wrap{max-width:760px;margin:0 auto;padding:24px 16px 60px}
+  .admin-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+  .admin-head h1{margin:0;font-size:22px}
+  .field{margin-bottom:14px}
+  .field label{font-size:13.5px;font-weight:700;display:block;margin-bottom:6px;color:var(--ink)}
+  .field .hint{font-size:12px;color:var(--mut);margin-top:4px}
+  .img-slot{display:flex;gap:12px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:12px;margin-bottom:10px;background:#fff}
+  .img-slot img{width:88px;height:88px;object-fit:cover;border-radius:10px;background:var(--cream);border:1px solid var(--line)}
+  .img-slot .imeta{flex:1;min-width:0}
+  .img-slot .imeta input{font-size:12px}
+  .img-slot .imeta .url{font-size:11px;color:var(--mut);word-break:break-all;margin-top:4px}
+  .login{max-width:360px;margin:80px auto;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:28px;text-align:center}
+  .login h1{font-size:20px;margin:0 0 18px}
+  .topbar-admin{background:var(--ink);color:#fff}
+  .topbar-admin .logo-text{color:#fff}
+  .badge{font-size:11px;background:var(--green);color:#fff;padding:3px 9px;border-radius:999px}
+  .btn.big{width:100%}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login" class="login">
+  <h1>🔐 Admin Login</h1>
+  <label>Password<input type="password" id="pw" placeholder="Admin password" style="text-align:center" /></label>
+  <div style="margin-top:16px"><button class="btn btn-green big" id="loginBtn">Login</button></div>
+  <p class="muted small" style="margin-top:12px" id="loginMsg"></p>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="panel" hidden>
+  <header class="topbar topbar-admin">
+    <div class="logo"><span class="logo-mark">খা</span><span class="logo-text">Shop <b>Admin</b></span></div>
+    <div class="topbar-right"><span class="badge">Admin</span><button class="btn btn-outline" id="logout" style="background:transparent;color:#fff;border-color:#fff">Logout</button></div>
+  </header>
+
+  <div class="admin-wrap">
+    <div class="admin-head">
+      <h1>⚙️ Site Settings</h1>
+      <button class="btn btn-green" id="saveBtn">💾 Save Changes</button>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h3>বেসিক তথ্য</h3>
+      <div class="field"><label>Product Name</label><input id="c_productName" placeholder="খামারি স্মার্ট নিরানি" /></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field"><label>Price (৳)</label><input id="c_price" type="number" placeholder="950" /></div>
+        <div class="field"><label>Delivery Charge (৳)</label><input id="c_deliveryCharge" type="number" placeholder="150" /></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field"><label>Phone (helpline)</label><input id="c_phone" placeholder="01577800857" /></div>
+        <div class="field"><label>Email (order notification)</label><input id="c_email" placeholder="marufhossain2707@gmail.com" /></div>
+      </div>
+      <div class="field"><label>Description (hero subtitle)</label><textarea id="c_description" rows="3" placeholder="জমির আগাছা পরিষ্কারের মজবুত ও টেকসই নিরানি..."></textarea></div>
+    </div>
+
+    <div class="card">
+      <h3>🖼️ ছবি (Hero + Gallery)</h3>
+      <p class="muted small" style="margin-top:-8px">Hero image = বড় ছবি। Gallery = নিচের ছোট ছবিগুলো (1–6টি)। File choose kore upload koro, ba direct image URL paste koro.</p>
+      <div class="img-slot">
+        <img id="pre_hero" alt="" />
+        <div class="imeta">
+          <label style="margin-bottom:4px;font-size:12.5px;font-weight:700">Hero Image</label>
+          <input type="file" accept="image/*" data-img="hero" />
+          <input id="c_heroImage" placeholder="image URL" style="margin-top:6px" />
+        </div>
+      </div>
+      <div id="gallerySlots"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="admin.js"></script>
+</body>
+</html>
